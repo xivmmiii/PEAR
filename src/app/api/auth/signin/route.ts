@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const user = await users.findOne<{ _id: { toString(): string }; email: string; passwordHash: string; role: Role; firstName: string }>({ email });
   if (!user || !(await bcrypt.compare(body.password, user.passwordHash))) return NextResponse.json({ message: "Email or password is incorrect." }, { status: 401 });
   if (body.role && body.role !== user.role) return NextResponse.json({ message: `This account is registered as a ${user.role}.` }, { status: 403 });
-  const token = await createSessionToken({ id: user._id.toString(), email: user.email, role: user.role });
+  const token = await createSessionToken({ id: user._id.toString(), email: user.email, firstName: user.firstName, role: user.role });
   const response = NextResponse.json({ user: { firstName: user.firstName, email: user.email, role: user.role } });
   response.cookies.set("pear_session", token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
   return response;

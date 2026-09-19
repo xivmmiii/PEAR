@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (existing) return NextResponse.json({ message: "An account with this email already exists." }, { status: 409 });
   const passwordHash = await bcrypt.hash(password, 12);
   const result = await users.insertOne({ firstName, lastName, email, passwordHash, role: role as Role, brandName: role === "seller" ? body.brandName?.trim() : undefined, createdAt: new Date(), updatedAt: new Date() });
-  const token = await createSessionToken({ id: result.insertedId.toString(), email, role: role as Role });
+  const token = await createSessionToken({ id: result.insertedId.toString(), email, firstName, role: role as Role });
   const response = NextResponse.json({ user: { firstName, email, role } }, { status: 201 });
   response.cookies.set("pear_session", token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
   return response;

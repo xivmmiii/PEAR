@@ -8,7 +8,7 @@ function getSecret() {
   return new TextEncoder().encode(value);
 }
 
-export async function createSessionToken(user: { id: string; email: string; role: Role }) {
+export async function createSessionToken(user: { id: string; email: string; firstName: string; role: Role }) {
   return new SignJWT(user).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("7d").sign(getSecret());
 }
 
@@ -23,7 +23,7 @@ export async function readOAuthState(token: string, expectedState: string) {
 
 export async function readSessionToken(token: string) {
   const { payload } = await jwtVerify(token, getSecret());
-  return payload as { id: string; email: string; role: Role };
+  return payload as { id: string; email: string; firstName: string; role: Role };
 }
 
 export function isRole(value: unknown): value is Role {

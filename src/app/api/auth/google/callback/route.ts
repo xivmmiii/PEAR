@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   const existing = await users.findOne({ email: profile.email.toLowerCase() });
   const user = existing ?? { firstName: profile.given_name ?? "PEAR", lastName: profile.family_name ?? "Shopper", email: profile.email.toLowerCase(), role: "shopper" as const, createdAt: new Date(), updatedAt: new Date() };
   if (!existing) await users.insertOne(user);
-  const session = await createSessionToken({ id: existing?._id?.toString() ?? profile.email, email: user.email, role: user.role });
+  const session = await createSessionToken({ id: existing?._id?.toString() ?? profile.email, email: user.email, firstName: user.firstName, role: user.role });
   const response = NextResponse.redirect(new URL("/dashboard", url.origin));
   response.cookies.set("pear_session", session, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
   response.cookies.set("google_oauth_state", "", { httpOnly: true, path: "/", maxAge: 0 });
