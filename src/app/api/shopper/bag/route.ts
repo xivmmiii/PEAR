@@ -20,7 +20,17 @@ export async function POST(request: Request) {
   const item = await request.json() as { productId?: string; quantity?: number; size?: string };
   if (!item.productId || !item.quantity || item.quantity < 1) return NextResponse.json({ message: "Product and quantity are required." }, { status: 400 });
   const users = await usersCollection();
-  await users.updateOne({ email: user.email }, { $push: { bag: { productId: item.productId, quantity: item.quantity, size: item.size ?? null } }, $set: { updatedAt: new Date() } });
+  const size = item.size ?? null;
+  const existing = await users.updateOne(
+    { email: user.email, bag: { $elemMatch: { productId: item.productId, size } } },
+    { $inc: { "bag.$.quantity": item.quantity }, $set: { updatedAt: new Date() } },
+  );
+  if (!existing.matchedCount) {
+    await users.updateOne(
+      { email: user.email },
+      { $push: { bag: { productId: item.productId, quantity: item.quantity, size } }, $set: { updatedAt: new Date() } },
+    );
+  }
   return NextResponse.json({ ok: true });
 }
 
