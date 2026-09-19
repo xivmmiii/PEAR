@@ -53,6 +53,10 @@ export function ShopperTools() {
       setMessage("");
       return;
     }
+    if (!nextProfile.firstName.trim() || !nextProfile.lastName.trim() || !address.flatNo.trim() || !address.area.trim() || !address.city.trim() || !address.state.trim() || !/^\d{6}$/.test(address.pincode)) {
+      setMessage("Complete the required profile and address fields.");
+      return;
+    }
     const response = await fetch("/api/shopper/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -79,15 +83,15 @@ export function ShopperTools() {
     </div>
     <div className="shopper-tool-card profile-form">
       <b>◒</b><h2>Profile</h2>
-      {editingProfile ? <form onSubmit={saveProfile}>
-        <input name="firstName" value={profile.firstName} onChange={(event) => setProfile({ ...profile, firstName: event.target.value })} placeholder="First name" required />
-        <input name="lastName" value={profile.lastName} onChange={(event) => setProfile({ ...profile, lastName: event.target.value })} placeholder="Last name" required />
+      {editingProfile ? <form onSubmit={saveProfile} noValidate>
+        <input name="firstName" value={profile.firstName} onChange={(event) => setProfile({ ...profile, firstName: event.target.value })} placeholder="First name" />
+        <input name="lastName" value={profile.lastName} onChange={(event) => setProfile({ ...profile, lastName: event.target.value })} placeholder="Last name" />
         <input name="phone" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} placeholder="Phone number" />
-        <input name="flatNo" value={profile.address.flatNo} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, flatNo: event.target.value } })} placeholder="Flat / house number" required />
+        <input name="flatNo" value={profile.address.flatNo} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, flatNo: event.target.value } })} placeholder="Flat / house number" />
         <input name="landmark" value={profile.address.landmark} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, landmark: event.target.value } })} placeholder="Landmark" />
-        <input name="area" value={profile.address.area} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, area: event.target.value } })} placeholder="Area / locality" required />
-        <div className="form-split"><input name="city" value={profile.address.city} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, city: event.target.value } })} placeholder="City" required /><input name="state" value={profile.address.state} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, state: event.target.value } })} placeholder="State" required /></div>
-        <div className="form-split"><input name="pincode" value={profile.address.pincode} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, pincode: event.target.value } })} placeholder="Pincode" inputMode="numeric" pattern="[0-9]{6}" required /><input name="country" value={profile.address.country} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, country: event.target.value } })} placeholder="Country" required /></div>
+        <input name="area" value={profile.address.area} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, area: event.target.value } })} placeholder="Area / locality" />
+        <div className="form-split"><input name="city" value={profile.address.city} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, city: event.target.value } })} placeholder="City" /><input name="state" value={profile.address.state} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, state: event.target.value } })} placeholder="State" /></div>
+        <div className="form-split"><input name="pincode" value={profile.address.pincode} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, pincode: event.target.value } })} placeholder="Pincode" inputMode="numeric" pattern="[0-9]{6}" /><input name="country" value={profile.address.country} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, country: event.target.value } })} placeholder="Country" /></div>
         <button className="button button-dark">Save profile</button>
       </form> : <>
         <p>{[profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Add your name"}{profile.phone && ` · ${profile.phone}`}{profile.address.city && ` · ${profile.address.city}, ${profile.address.state}`}</p>
