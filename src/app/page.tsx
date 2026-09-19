@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -58,7 +59,7 @@ export default function Home() {
       <SiteHeader />
       <main>
         <section className={`hero ${slide.tone}`}>
-          <img src={slide.image} alt="" className="hero-image" />
+          <Image src={slide.image} alt="" className="hero-image" fill priority={active === 0} sizes="100vw" />
           <div className="hero-shade" />
           <div className="hero-content page-width">
             <p className="eyebrow">{slide.eyebrow}</p>
@@ -75,13 +76,13 @@ export default function Home() {
 
         <section className="section page-width">
           <div className="section-heading"><div><p className="eyebrow">Find your everyday</p><h2>Shop by category</h2></div><Link href="/signup" className="text-link">Explore all <span>↗</span></Link></div>
-          <div className="category-grid">{categories.map(([name, image]) => <Link href={`/catalogue/${name.toLowerCase()}`} className="category-card" key={name}><img src={image} alt={name} /><span>{name}</span><b>→</b></Link>)}</div>
+          <div className="category-grid">{categories.map(([name, image]) => <Link href={`/catalogue/${name.toLowerCase()}`} className="category-card" key={name}><Image src={image} alt={name} fill sizes="(max-width: 620px) 50vw, 16vw" /><span>{name}</span><b>→</b></Link>)}</div>
         </section>
 
         <section className="section section-tinted" id="trending">
           <div className="page-width">
             <div className="section-heading"><div><p className="eyebrow">Most wanted right now</p><h2>Trending on PEAR</h2></div><Link href="/catalogue" className="text-link">View all <span>↗</span></Link></div>
-            <div className="product-grid">{products.map(([brand, name, price, mrp, off, rating, image]) => <article className="product-card" key={name}><div className="product-image"><img src={image} alt={name} /><button className="wishlist" aria-label={`Save ${name}`}>♡</button><span className="sale-tag">{off} OFF</span></div><div className="product-info"><p className="product-brand">{brand}</p><h3>{name}</h3><div className="price-row"><strong>{price}</strong><s>{mrp}</s><em>{off}</em></div><div className="rating">★ {rating} <span>·</span> <button>Add to bag</button></div><div className="sizes"><span>XS</span><span>S</span><span>M</span><span>L</span></div></div></article>)}</div>
+            <div className="product-grid">{products.map(([brand, name, price, mrp, off, rating, image]) => <article className="product-card" key={name}><div className="product-image"><Image src={image} alt={name} fill sizes="(max-width: 620px) 50vw, 25vw" /><button className="wishlist" aria-label={`Save ${name}`}>♡</button><span className="sale-tag">{off} OFF</span></div><div className="product-info"><p className="product-brand">{brand}</p><h3>{name}</h3><div className="price-row"><strong>{price}</strong><s>{mrp}</s><em>{off}</em></div><div className="rating">★ {rating} <span>·</span> <button>Add to bag</button></div><div className="sizes"><span>XS</span><span>S</span><span>M</span><span>L</span></div></div></article>)}</div>
           </div>
         </section>
 

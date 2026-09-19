@@ -23,6 +23,11 @@ After signing in, users are sent to `/dashboard`. The dashboard is protected ser
 
 The app intentionally does not log passwords or return password hashes from API responses.
 
+Optional integrations:
+
+- Online payments require `PAYMENT_PROVIDER_SECRET`.
+- Google sign-in requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and a matching `GOOGLE_REDIRECT_URI` registered in Google Cloud Console. Without these values, the normal email/password flow remains available.
+
 ## Getting Started
 
 First, run the development server:

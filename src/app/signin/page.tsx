@@ -46,7 +46,7 @@ export default function SignIn() {
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-dark full" disabled={loading}>{loading ? "Signing in..." : "Sign in"} <span>↗</span></button>
           <div className="or"><span>or continue with</span></div>
-          <button type="button" className="google-button">G <span>Continue with Google</span></button>
+          <a href="/api/auth/google" className="google-button">G <span>Continue with Google</span></a>
           <p className="auth-switch">New to PEAR? <Link href="/signup">Create an account</Link></p>
         </form>
       )}
