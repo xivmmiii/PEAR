@@ -12,6 +12,15 @@ export async function createSessionToken(user: { id: string; email: string; role
   return new SignJWT(user).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("7d").sign(getSecret());
 }
 
+export async function createOAuthState(state: string) {
+  return new SignJWT({ state, purpose: "google-oauth" }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("10m").sign(getSecret());
+}
+
+export async function readOAuthState(token: string, expectedState: string) {
+  const { payload } = await jwtVerify(token, getSecret());
+  if (payload.purpose !== "google-oauth" || payload.state !== expectedState) throw new Error("Invalid OAuth state.");
+}
+
 export async function readSessionToken(token: string) {
   const { payload } = await jwtVerify(token, getSecret());
   return payload as { id: string; email: string; role: Role };

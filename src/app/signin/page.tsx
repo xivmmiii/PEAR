@@ -20,7 +20,7 @@ export default function SignIn() {
       {sent ? (
         <div className="success-message">
           <span>✓</span><h3>You&apos;re in the demo!</h3>
-          <p>We&apos;ve received your details. In a real app, you&apos;d be on your way to your {role} dashboard.</p>
+          <p>Your {role} account is signed in and ready to use.</p>
           <Link href="/dashboard" className="button button-dark">Continue to dashboard <span>↗</span></Link>
         </div>
       ) : (
