@@ -7,6 +7,16 @@ const clientPromise = client.connect();
 
 export default clientPromise;
 
+export type Address = {
+  flatNo: string;
+  landmark: string;
+  area: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+};
+
 export async function getDb(): Promise<Db> {
   const connectedClient = await clientPromise;
   return connectedClient.db(dbName);
@@ -23,7 +33,7 @@ export type UserDocument = {
   bag?: { productId: string; quantity: number; size: string | null }[];
   brandName?: string;
   phone?: string;
-  address?: Record<string, string>;
+  address?: Address;
   suspended?: boolean;
   createdAt: Date;
   updatedAt: Date;
