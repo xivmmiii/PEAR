@@ -14,7 +14,8 @@ export async function GET(request: Request) {
   if (search) query.$or = [{ name: { $regex: search, $options: "i" } }, { brand: { $regex: search, $options: "i" } }];
   const order: Record<string, 1 | -1> = sort === "price-low" ? { price: 1 } : sort === "price-high" ? { price: -1 } : sort === "discount" ? { discountPercent: -1 } : { createdAt: -1 };
   const rows = await products.find(query).sort(order).limit(48).toArray();
-  return NextResponse.json({ products: rows.length ? rows : seedProducts });
+  const hasFilters = Boolean(category || brand || search);
+  return NextResponse.json({ products: rows.length || hasFilters ? rows : seedProducts });
 }
 
 export async function POST() {
