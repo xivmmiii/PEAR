@@ -1,19 +1,16 @@
-import { MongoClient } from "mongodb";
-import type { Collection, ObjectId } from "mongodb";
-const uri = process.env.MONGODB_URI;
-const options = {};
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+import { MongoClient, type Collection, type Db, type ObjectId } from "mongodb";
 
-if (!uri) {
-  client = new MongoClient("mongodb://127.0.0.1:27017");
-  clientPromise = Promise.resolve(client);
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
+const uri = process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017";
+const dbName = process.env.MONGODB_DB ?? "pear";
+const client = new MongoClient(uri);
+const clientPromise = client.connect();
 
 export default clientPromise;
+
+export async function getDb(): Promise<Db> {
+  const connectedClient = await clientPromise;
+  return connectedClient.db(dbName);
+}
 
 export type UserDocument = {
   _id?: ObjectId;
@@ -33,8 +30,34 @@ export type UserDocument = {
 };
 
 export async function usersCollection(): Promise<Collection<UserDocument>> {
-  const client = await clientPromise;
-  const collection = client.db(process.env.MONGODB_DB ?? "pear").collection<UserDocument>("users");
-  await collection.createIndex({ email: 1 }, { unique: true });
+  const collection = getDb().then((db) => db.collection<UserDocument>("users"));
+  const resolved = await collection;
+  await resolved.createIndex({ email: 1 }, { unique: true });
+  await resolved.createIndex({ role: 1, suspended: 1 });
+  return resolved;
+}
+
+export type OrderDocument = {
+  _id?: ObjectId;
+  shopperId: string;
+  items: { productId: string; name: string; brand: string; quantity: number; size?: string | null; unitPrice: number; total: number; sellerId?: string }[];
+  total: number;
+  address: Record<string, string>;
+  payment: { status: string; provider: string; reference: string };
+  status: "placed" | "processing" | "shipped" | "delivered" | "cancelled";
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export async function ordersCollection(): Promise<Collection<OrderDocument>> {
+  const collection = (await getDb()).collection<OrderDocument>("orders");
+  await collection.createIndex({ shopperId: 1, createdAt: -1 });
+  await collection.createIndex({ "items.sellerId": 1, createdAt: -1 });
   return collection;
+}
+
+export async function databaseHealth() {
+  const db = await getDb();
+  await db.command({ ping: 1 });
+  return { database: db.databaseName, connected: true };
 }

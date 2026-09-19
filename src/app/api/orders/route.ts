@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { usersCollection } from "@/lib/mongodb";
+import { ordersCollection, usersCollection } from "@/lib/mongodb";
 import { productsCollection } from "@/lib/catalogue";
 import { requireRole } from "@/lib/rbac";
 import { createPaymentIntent, type PaymentMethod } from "@/lib/payments";
@@ -7,9 +7,8 @@ import { createPaymentIntent, type PaymentMethod } from "@/lib/payments";
 export async function GET() {
   const user = await requireRole(["shopper", "seller", "admin"]);
   if (!user) return NextResponse.json({ message: "Authentication required." }, { status: 401 });
-  const client = await (await import("@/lib/mongodb")).default;
-  const orders = client.db(process.env.MONGODB_DB ?? "pear").collection("orders");
-  const query = user.role === "shopper" ? { shopperId: user.id } : user.role === "seller" ? { sellerIds: user.id } : {};
+  const orders = await ordersCollection();
+  const query = user.role === "shopper" ? { shopperId: user.id } : user.role === "seller" ? { "items.sellerId": user.id } : {};
   return NextResponse.json({ orders: await orders.find(query).sort({ createdAt: -1 }).limit(50).toArray() });
 }
 
@@ -29,8 +28,7 @@ export async function POST(request: Request) {
   const total = lineItems.reduce((sum, item) => sum + item.total, 0);
   try {
     const payment = await createPaymentIntent({ amount: total, method: body.paymentMethod });
-    const client = await (await import("@/lib/mongodb")).default;
-    const orders = client.db(process.env.MONGODB_DB ?? "pear").collection("orders");
+    const orders = await ordersCollection();
     const result = await orders.insertOne({ shopperId: user.id, items: lineItems, total, address: body.address, payment, status: "placed", createdAt: new Date(), updatedAt: new Date() });
     const users = await usersCollection();
     await users.updateOne({ email: user.email }, { $set: { bag: [], updatedAt: new Date() } });

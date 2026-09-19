@@ -17,6 +17,8 @@ npm install
 npm run dev
 ```
 
+Verify the connection with `GET http://localhost:3000/api/health/db`. All user, product, order, seller, shopper, and admin data access uses the shared connection in `src/lib/mongodb.ts`.
+
 Users are stored in the `users` collection with bcrypt password hashes and one of the roles `shopper`, `seller`, or `admin`. Public sign-up allows shopper and seller accounts only; admin accounts must be provisioned separately. Successful authentication creates a seven-day HttpOnly `pear_session` cookie containing a signed role claim.
 
 After signing in, users are sent to `/dashboard`. The dashboard is protected server-side with `requireRole`; unauthenticated users are redirected to sign-in. Use `POST /api/auth/signout` to clear the session.

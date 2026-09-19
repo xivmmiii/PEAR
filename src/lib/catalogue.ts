@@ -1,5 +1,5 @@
 import type { Collection, ObjectId } from "mongodb";
-import clientPromise from "./mongodb";
+import { getDb } from "./mongodb";
 
 export type ProductDocument = {
   _id?: ObjectId;
@@ -29,8 +29,7 @@ export const seedProducts: Omit<ProductDocument, "_id" | "createdAt" | "updatedA
 ];
 
 export async function productsCollection(): Promise<Collection<ProductDocument>> {
-  const client = await clientPromise;
-  const collection = client.db(process.env.MONGODB_DB ?? "pear").collection<ProductDocument>("products");
+  const collection = (await getDb()).collection<ProductDocument>("products");
   await Promise.all([collection.createIndex({ slug: 1 }, { unique: true }), collection.createIndex({ category: 1, status: 1 }), collection.createIndex({ brand: 1 })]);
   return collection;
 }

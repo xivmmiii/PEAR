@@ -20,3 +20,26 @@ export async function POST(request: Request) {
   const result = await products.insertOne({ slug, name: body.name.trim(), brand: body.brand.trim(), category: body.category as never, description: body.description?.trim() ?? "", price: Number(body.price), mrp: Number(body.mrp), discountPercent: Math.max(0, Math.round((1 - Number(body.price) / Number(body.mrp)) * 100)), rating: 0, sizes: body.sizes ?? [], imageUrl: body.imageUrl, stock: Number(body.stock), sellerId: user.id, status: "active", createdAt: now, updatedAt: now });
   return NextResponse.json({ id: result.insertedId.toString() }, { status: 201 });
 }
+
+export async function PATCH(request: Request) {
+  const user = await requireRole(["seller", "admin"]);
+  if (!user) return NextResponse.json({ message: "Seller access required." }, { status: 403 });
+  const body = await request.json() as { slug?: string; name?: string; price?: number; mrp?: number; stock?: number; status?: "draft" | "active" | "archived" };
+  if (!body.slug) return NextResponse.json({ message: "Product slug is required." }, { status: 400 });
+  const products = await productsCollection();
+  const filter = user.role === "admin" ? { slug: body.slug } : { slug: body.slug, sellerId: user.id };
+  const update = { ...(body.name ? { name: body.name.trim() } : {}), ...(body.price ? { price: body.price } : {}), ...(body.mrp ? { mrp: body.mrp } : {}), ...(body.stock !== undefined ? { stock: body.stock } : {}), ...(body.status ? { status: body.status } : {}), updatedAt: new Date() };
+  const result = await products.updateOne(filter, { $set: update });
+  return NextResponse.json({ updated: result.modifiedCount > 0 });
+}
+
+export async function DELETE(request: Request) {
+  const user = await requireRole(["seller", "admin"]);
+  if (!user) return NextResponse.json({ message: "Seller access required." }, { status: 403 });
+  const slug = new URL(request.url).searchParams.get("slug");
+  if (!slug) return NextResponse.json({ message: "Product slug is required." }, { status: 400 });
+  const products = await productsCollection();
+  const filter = user.role === "admin" ? { slug } : { slug, sellerId: user.id };
+  const result = await products.updateOne(filter, { $set: { status: "archived", updatedAt: new Date() } });
+  return NextResponse.json({ archived: result.modifiedCount > 0 });
+}
