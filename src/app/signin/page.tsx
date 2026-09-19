@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth-layout";
 
 export default function SignIn() {
+  const router = useRouter();
   const [role, setRole] = useState("shopper");
   const [show, setShow] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,14 +18,7 @@ export default function SignIn() {
         <button className={role === "shopper" ? "selected" : ""} onClick={() => setRole("shopper")}>Shopper</button>
         <button className={role === "seller" ? "selected" : ""} onClick={() => setRole("seller")}>Seller</button>
       </div>
-      {sent ? (
-        <div className="success-message">
-          <span>✓</span><h3>You&apos;re in the demo!</h3>
-          <p>Your {role} account is signed in and ready to use.</p>
-          <Link href="/dashboard" className="button button-dark">Continue to dashboard <span>↗</span></Link>
-        </div>
-      ) : (
-        <form className="auth-form" onSubmit={async (event) => {
+      <form className="auth-form" onSubmit={async (event) => {
           event.preventDefault();
           setError("");
           setLoading(true);
@@ -33,7 +27,10 @@ export default function SignIn() {
           const result = await response.json();
           setLoading(false);
           if (!response.ok) setError(result.message);
-          else setSent(true);
+          else {
+            router.push("/dashboard");
+            router.refresh();
+          }
         }}>
           <label>Email address<input name="email" type="email" placeholder="you@example.com" required /></label>
           <label>Password
@@ -49,7 +46,6 @@ export default function SignIn() {
           <a href="/api/auth/google" className="google-button">G <span>Continue with Google</span></a>
           <p className="auth-switch">New to PEAR? <Link href="/signup">Create an account</Link></p>
         </form>
-      )}
     </AuthLayout>
   );
 }
