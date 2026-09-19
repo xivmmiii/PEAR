@@ -1,4 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PEAR
+
+PEAR is a Next.js fashion marketplace prototype with MongoDB-backed shopper and seller authentication.
+
+## Local setup
+
+Use Node.js 22 LTS (or the current Node.js LTS) and MongoDB 7+.
+
+1. Copy `.env.example` to `.env.local`.
+2. Set `MONGODB_URI` to your MongoDB Atlas or local connection string.
+3. Set `MONGODB_DB` to the database name you want to use.
+4. Generate a long random `AUTH_SECRET`.
+5. Install and run:
+
+```bash
+npm install
+npm run dev
+```
+
+Users are stored in the `users` collection with bcrypt password hashes and one of the roles `shopper`, `seller`, or `admin`. Public sign-up allows shopper and seller accounts only; admin accounts must be provisioned separately. Successful authentication creates a seven-day HttpOnly `pear_session` cookie containing a signed role claim.
+
+After signing in, users are sent to `/dashboard`. The dashboard is protected server-side with `requireRole`; unauthenticated users are redirected to sign-in. Use `POST /api/auth/signout` to clear the session.
+
+The app intentionally does not log passwords or return password hashes from API responses.
 
 ## Getting Started
 
