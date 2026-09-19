@@ -40,7 +40,7 @@ export async function PATCH(request: Request) {
   const item = await request.json() as { productId?: string; quantity?: number; size?: string | null };
   if (!item.productId || !item.quantity || item.quantity < 1) return NextResponse.json({ message: "Product and quantity are required." }, { status: 400 });
   const users = await usersCollection();
-  await users.updateOne({ email: user.email, "bag.productId": item.productId }, { $set: { "bag.$.quantity": item.quantity, "bag.$.size": item.size ?? null, updatedAt: new Date() } });
+  await users.updateOne({ email: user.email, bag: { $elemMatch: { productId: item.productId, size: item.size ?? null } } }, { $set: { "bag.$.quantity": item.quantity, updatedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }
 
@@ -48,8 +48,9 @@ export async function DELETE(request: Request) {
   const user = await requireRole(["shopper"]);
   if (!user) return NextResponse.json({ message: "Shopper access required." }, { status: 403 });
   const productId = new URL(request.url).searchParams.get("productId");
+  const size = new URL(request.url).searchParams.get("size");
   if (!productId) return NextResponse.json({ message: "Product ID is required." }, { status: 400 });
   const users = await usersCollection();
-  await users.updateOne({ email: user.email }, { $pull: { bag: { productId } }, $set: { updatedAt: new Date() } });
+  await users.updateOne({ email: user.email }, { $pull: { bag: { productId, size: size ?? null } }, $set: { updatedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }
