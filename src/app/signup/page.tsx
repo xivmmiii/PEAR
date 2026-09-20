@@ -3,31 +3,45 @@
 import { useState } from "react";
 import { AuthLayout } from "@/components/auth-layout";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
+  const router = useRouter();
   const [role, setRole] = useState("shopper");
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   return (
     <AuthLayout title="Join PEAR" subtitle="Your next favourite thing is here.">
       <div className="role-cards">
-        <button className={role === "shopper" ? "selected" : ""} onClick={() => setRole("shopper")}><b>◒</b><span><strong>Shopper</strong><small>Discover your style</small></span></button>
-        <button className={role === "seller" ? "selected" : ""} onClick={() => setRole("seller")}><b>◈</b><span><strong>Seller</strong><small>Grow your label</small></span></button>
+        <button type="button" className={role === "shopper" ? "selected" : ""} onClick={() => setRole("shopper")}><b>◒</b><span><strong>Shopper</strong><small>Discover your style</small></span></button>
+        <button type="button" className={role === "seller" ? "selected" : ""} onClick={() => setRole("seller")}><b>◈</b><span><strong>Seller</strong><small>Grow your label</small></span></button>
       </div>
-      {sent ? (
-        <div className="success-message"><span>✦</span><h3>Welcome to PEAR!</h3><p>Your {role} account is ready.</p><Link href="/dashboard" className="button button-dark">Open your dashboard <span>↗</span></Link></div>
-      ) : (
-        <form className="auth-form" onSubmit={async (event) => {
+      <form className="auth-form" onSubmit={async (event) => {
           event.preventDefault();
           setError("");
           setLoading(true);
           const form = new FormData(event.currentTarget);
-          const response = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ firstName: form.get("firstName"), lastName: form.get("lastName"), brandName: form.get("brandName"), email: form.get("email"), password: form.get("password"), role }) });
-          const result = await response.json();
-          setLoading(false);
-          if (!response.ok) setError(result.message);
-          else setSent(true);
+          try {
+            const response = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ firstName: form.get("firstName"), lastName: form.get("lastName"), brandName: form.get("brandName"), email: form.get("email"), password: form.get("password"), role }) });
+            const responseText = await response.text();
+            let result: { message?: string } = {};
+            if (responseText) {
+              try {
+                result = JSON.parse(responseText) as { message?: string };
+              } catch {
+                result = {};
+              }
+            }
+            if (!response.ok) setError(result.message ?? "Could not create your account. Please try again.");
+            else {
+              router.push("/dashboard");
+              router.refresh();
+            }
+          } catch {
+            setError("We could not reach PEAR. Check your connection and try again.");
+          } finally {
+            setLoading(false);
+          }
         }}>
           <div className="form-split"><label>First name<input name="firstName" required placeholder="Aarav" /></label><label>Last name<input name="lastName" required placeholder="Shah" /></label></div>
           {role === "seller" && <label>Brand / store name<input name="brandName" required placeholder="Your label" /></label>}
@@ -38,7 +52,6 @@ export default function SignUp() {
           <button className="button button-dark full" disabled={loading}>{loading ? "Creating account..." : "Create account"} <span>↗</span></button>
           <p className="auth-switch">Already have an account? <Link href="/signin">Sign in</Link></p>
         </form>
-      )}
     </AuthLayout>
   );
 }
