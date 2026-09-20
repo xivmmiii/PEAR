@@ -32,6 +32,7 @@ export type UserDocument = {
   wishlist?: string[];
   bag?: { productId: string; quantity: number; size: string | null }[];
   brandName?: string;
+  storeDescription?: string;
   phone?: string;
   address?: Address;
   suspended?: boolean;
