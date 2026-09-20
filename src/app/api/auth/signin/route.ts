@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { usersCollection } from "@/lib/mongodb";
 import { createSessionToken, isRole, type Role } from "@/lib/auth";
+import { emailPattern } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json() as { email?: string; password?: string; role?: string };
     const email = body.email?.trim().toLowerCase();
-    if (!email || !body.password || (body.role && !isRole(body.role))) return NextResponse.json({ message: "Enter a valid email and password." }, { status: 400 });
+    if (!email || !emailPattern.test(email) || !body.password || body.password.length > 128 || (body.role && !isRole(body.role))) return NextResponse.json({ message: "Enter a valid email and password." }, { status: 400 });
     const users = await usersCollection();
     const user = await users.findOne<{ _id: { toString(): string }; email: string; passwordHash?: string; role: Role; firstName: string }>({ email });
     if (!user?.passwordHash || !(await bcrypt.compare(body.password, user.passwordHash))) return NextResponse.json({ message: "Email or password is incorrect." }, { status: 401 });

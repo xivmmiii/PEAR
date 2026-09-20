@@ -43,10 +43,10 @@ export default function SignUp() {
             setLoading(false);
           }
         }}>
-          <div className="form-split"><label>First name<input name="firstName" required placeholder="Aarav" /></label><label>Last name<input name="lastName" required placeholder="Shah" /></label></div>
-          {role === "seller" && <label>Brand / store name<input name="brandName" required placeholder="Your label" /></label>}
-          <label>Email address<input name="email" type="email" required placeholder="you@example.com" /></label>
-          <label>Create password<input name="password" type="password" minLength={8} required placeholder="8+ characters" /></label>
+          <div className="form-split"><label>First name<input name="firstName" minLength={2} maxLength={40} required placeholder="Aarav" /></label><label>Last name<input name="lastName" minLength={2} maxLength={40} required placeholder="Shah" /></label></div>
+          {role === "seller" && <label>Brand / store name<input name="brandName" minLength={2} maxLength={60} required placeholder="Your label" /></label>}
+          <label>Email address<input name="email" type="email" maxLength={254} required placeholder="you@example.com" /></label>
+          <label>Create password<input name="password" type="password" minLength={8} maxLength={128} required placeholder="8+ characters" /></label>
           <label className="check terms"><input type="checkbox" required /> I agree to PEAR&apos;s <Link href="/signup">Terms & conditions</Link> and Privacy Policy.</label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-dark full" disabled={loading}>{loading ? "Creating account..." : "Create account"} <span>↗</span></button>

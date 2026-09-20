@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { productsCollection } from "@/lib/catalogue";
 import { requireRole } from "@/lib/rbac";
+import { limits, sentenceCase, validIntegerString, validText } from "@/lib/validation";
 
 export async function GET() {
   const user = await requireRole(["seller", "admin"]);
@@ -13,20 +14,19 @@ export async function POST(request: Request) {
   const user = await requireRole(["seller"]);
   if (!user) return NextResponse.json({ message: "Seller access required." }, { status: 403 });
   const body = await request.json() as { name?: string; brand?: string; category?: string; price?: string; mrp?: string; stock?: string; imageUrl?: string; description?: string; sizes?: string[] };
-  const parsePositiveInteger = (value?: string) => value && /^\d+$/.test(value.trim()) ? Number.parseInt(value, 10) : NaN;
+  const parsePositiveInteger = (value?: string) => validIntegerString(value) ? Number.parseInt(value!.trim(), 10) : NaN;
   const price = parsePositiveInteger(body.price);
   const mrp = parsePositiveInteger(body.mrp);
   const stock = parsePositiveInteger(body.stock);
-  if (!body.name?.trim() || !body.brand?.trim() || !body.category || !Number.isInteger(price) || price < 1 || !Number.isInteger(mrp) || mrp < 1 || !Number.isInteger(stock) || stock < 1) return NextResponse.json({ message: "Name, brand, category, and valid whole-number pricing and stock are required." }, { status: 400 });
+  if (!validText(body.name, limits.name.min, limits.name.max) || !validText(body.brand, limits.brand.min, limits.brand.max) || !["men", "women", "kids", "footwear", "accessories", "ethnic-wear"].includes(body.category ?? "") || !Number.isInteger(price) || price < 1 || !Number.isInteger(mrp) || mrp < 1 || !Number.isInteger(stock) || stock < 1 || (body.description !== undefined && body.description !== "" && !validText(body.description, limits.description.min, limits.description.max))) return NextResponse.json({ message: "Enter valid name, brand, category, pricing, stock, and description values." }, { status: 400 });
   if (body.imageUrl) {
     const imageMatch = body.imageUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
     if (!imageMatch) return NextResponse.json({ message: "Image must be a JPG, PNG, or WebP upload." }, { status: 400 });
     if (Buffer.from(imageMatch[2], "base64").byteLength > 5 * 1024 * 1024) return NextResponse.json({ message: "Image must be 5 MB or smaller." }, { status: 400 });
   }
-  const sentenceCase = (value: string) => { const trimmed = value.trim().toLowerCase(); return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : ""; };
   const products = await productsCollection();
-  const name = sentenceCase(body.name);
-  const brand = sentenceCase(body.brand);
+  const name = sentenceCase(body.name!);
+  const brand = sentenceCase(body.brand!);
   const slug = `${brand}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + `-${Date.now()}`;
   const now = new Date();
   const result = await products.insertOne({ slug, name, brand, category: body.category as never, description: body.description ? sentenceCase(body.description) : "", price, mrp, discountPercent: Math.max(0, Math.round((1 - price / mrp) * 100)), rating: 0, sizes: body.sizes ?? [], imageUrl: body.imageUrl ?? "", stock, sellerId: user.id, status: "active", createdAt: now, updatedAt: now });
@@ -45,7 +45,6 @@ export async function PATCH(request: Request) {
   if ([price, mrp, stock].some((value) => value !== undefined && (!Number.isInteger(value) || value < 1))) return NextResponse.json({ message: "Price, MRP, and stock must be whole numbers greater than 0." }, { status: 400 });
   const products = await productsCollection();
   const filter = user.role === "admin" ? { slug: body.slug } : { slug: body.slug, sellerId: user.id };
-  const sentenceCase = (value: string) => { const trimmed = value.trim().toLowerCase(); return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : ""; };
   const update = { ...(body.name ? { name: sentenceCase(body.name) } : {}), ...(body.brand ? { brand: sentenceCase(body.brand) } : {}), ...(price !== undefined ? { price } : {}), ...(mrp !== undefined ? { mrp } : {}), ...(stock !== undefined ? { stock } : {}), ...(body.status ? { status: body.status } : {}), updatedAt: new Date() };
   const result = await products.updateOne(filter, { $set: update });
   return NextResponse.json({ updated: result.modifiedCount > 0 });

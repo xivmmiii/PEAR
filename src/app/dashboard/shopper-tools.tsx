@@ -86,7 +86,7 @@ export function ShopperTools() {
       {editingProfile ? <form onSubmit={saveProfile} noValidate>
         <input name="firstName" value={profile.firstName} onChange={(event) => setProfile({ ...profile, firstName: event.target.value })} placeholder="First name" />
         <input name="lastName" value={profile.lastName} onChange={(event) => setProfile({ ...profile, lastName: event.target.value })} placeholder="Last name" />
-        <input name="phone" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} placeholder="Phone number" />
+        <input name="phone" inputMode="numeric" pattern="[0-9]{10}" minLength={10} maxLength={10} value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} placeholder="10-digit phone number" />
         <input name="flatNo" value={profile.address.flatNo} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, flatNo: event.target.value } })} placeholder="Flat / house number" />
         <input name="landmark" value={profile.address.landmark} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, landmark: event.target.value } })} placeholder="Landmark" />
         <input name="area" value={profile.address.area} onChange={(event) => setProfile({ ...profile, address: { ...profile.address, area: event.target.value } })} placeholder="Area / locality" />

@@ -45,10 +45,10 @@ export default function SignIn() {
             setLoading(false);
           }
         }}>
-          <label>Email address<input name="email" type="email" placeholder="you@example.com" required /></label>
+          <label>Email address<input name="email" type="email" maxLength={254} placeholder="you@example.com" required /></label>
           <label>Password
             <div className="password">
-              <input name="password" type={show ? "text" : "password"} placeholder="Enter your password" required />
+              <input name="password" type={show ? "text" : "password"} maxLength={128} placeholder="Enter your password" required />
               <button type="button" onClick={() => setShow(!show)}>{show ? "Hide" : "Show"}</button>
             </div>
           </label>
