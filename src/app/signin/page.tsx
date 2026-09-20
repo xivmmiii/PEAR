@@ -23,13 +23,26 @@ export default function SignIn() {
           setError("");
           setLoading(true);
           const form = new FormData(event.currentTarget);
-          const response = await fetch("/api/auth/signin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.get("email"), password: form.get("password"), role }) });
-          const result = await response.json();
-          setLoading(false);
-          if (!response.ok) setError(result.message);
-          else {
-            router.push("/dashboard");
-            router.refresh();
+          try {
+            const response = await fetch("/api/auth/signin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.get("email"), password: form.get("password"), role }) });
+            const responseText = await response.text();
+            let result: { message?: string } = {};
+            if (responseText) {
+              try {
+                result = JSON.parse(responseText) as { message?: string };
+              } catch {
+                result = {};
+              }
+            }
+            if (!response.ok) setError(result.message ?? "Sign-in failed. Please try again.");
+            else {
+              router.push("/dashboard");
+              router.refresh();
+            }
+          } catch {
+            setError("We could not reach PEAR. Check your connection and try again.");
+          } finally {
+            setLoading(false);
           }
         }}>
           <label>Email address<input name="email" type="email" placeholder="you@example.com" required /></label>

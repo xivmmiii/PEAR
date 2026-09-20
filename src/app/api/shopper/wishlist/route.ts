@@ -19,3 +19,13 @@ export async function POST(request: Request) {
   await users.updateOne({ email: user.email }, { $addToSet: { wishlist: productId }, $set: { updatedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(request: Request) {
+  const user = await requireRole(["shopper"]);
+  if (!user) return NextResponse.json({ message: "Shopper access required." }, { status: 403 });
+  const productId = new URL(request.url).searchParams.get("productId");
+  if (!productId) return NextResponse.json({ message: "Product ID is required." }, { status: 400 });
+  const users = await usersCollection();
+  await users.updateOne({ email: user.email }, { $pull: { wishlist: productId }, $set: { updatedAt: new Date() } });
+  return NextResponse.json({ ok: true });
+}

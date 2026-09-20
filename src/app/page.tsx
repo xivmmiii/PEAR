@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { ProductCard } from "@/components/product-card";
 
 const slides = [
   {
@@ -82,11 +83,11 @@ export default function Home() {
         <section className="section section-tinted" id="trending">
           <div className="page-width">
             <div className="section-heading"><div><p className="eyebrow">Most wanted right now</p><h2>Trending on PEAR</h2></div><Link href="/catalogue" className="text-link">View all <span>↗</span></Link></div>
-            <div className="product-grid">{products.map(([brand, name, price, mrp, off, rating, image]) => <Link href={`/products/${brand.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="product-card" key={name}><div className="product-image"><Image src={image} alt={name} fill sizes="(max-width: 620px) 50vw, 25vw" /><span className="sale-tag">{off} OFF</span></div><div className="product-info"><p className="product-brand">{brand}</p><h3>{name}</h3><div className="price-row"><strong>{price}</strong><s>{mrp}</s><em>{off}</em></div><div className="rating">★ {rating}</div></div></Link>)}</div>
+            <div className="product-grid">{products.map(([brand, name, price, mrp, off, rating, image]) => <ProductCard key={name} slug={`${brand}-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-")} name={name} brand={brand} price={Number(String(price).replace(/[^0-9]/g, ""))} mrp={Number(String(mrp).replace(/[^0-9]/g, ""))} discountPercent={Number(String(off).replace(/[^0-9]/g, ""))} rating={Number(rating)} imageUrl={image} />)}</div>
           </div>
         </section>
 
-        <section className="brand-section page-width"><div className="section-heading"><div><p className="eyebrow">Good company</p><h2>Brands in focus</h2></div><p className="brand-disclaimer">Explore popular brands available through PEAR.</p></div><div className="brand-row">{["LEVI'S", "NIKE", "ADIDAS", "ZARA", "H&M", "PUMA"].map((brand) => <span key={brand}>{brand}</span>)}</div></section>
+        <section className="brand-section page-width"><div className="section-heading"><div><p className="eyebrow">Good company</p><h2>Brands in focus</h2></div><p className="brand-disclaimer">Explore popular brands available through PEAR.</p></div><div className="brand-row">{[["LEVI'S", "levis"], ["NIKE", "nike"], ["ADIDAS", "adidas"], ["ZARA", "zara"], ["H&M", "hm"], ["PUMA", "puma"]].map(([brand, logo]) => <div className="brand-chip" key={brand}><span className="brand-mark"><Image src={`https://cdn.simpleicons.org/${logo}`} alt={`${brand} logo`} width={30} height={30} /></span><span>{brand}</span></div>)}</div></section>
         <section className="trust-row page-width"><div><b>↩</b><strong>30-day easy returns</strong><span>Try it, love it, or send it back.</span></div><div><b>✦</b><strong>Free shipping over ₹999</strong><span>More style, less delivery fee.</span></div><div><b>✓</b><strong>100% original brands</strong><span>Always authentic. Always PEAR.</span></div><div><b>₹</b><strong>Cash on delivery</strong><span>Shop your way, your choice.</span></div></section>
         <section className="seller-cta"><div className="page-width seller-inner"><div><p className="eyebrow">Have a label?</p><h2>Make room for<br /><i>your</i> good stuff.</h2></div><div><p>Put your fashion label in front of millions of curious shoppers. Simple tools, big reach, and a community that gets it.</p><Link href="/signup?role=seller" className="button button-light">Sell on PEAR <span>↗</span></Link></div></div></section>
       </main>
