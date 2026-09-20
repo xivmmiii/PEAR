@@ -36,11 +36,17 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const user = await requireRole(["seller", "admin"]);
   if (!user) return NextResponse.json({ message: "Seller access required." }, { status: 403 });
-  const body = await request.json() as { slug?: string; name?: string; price?: number; mrp?: number; stock?: number; status?: "draft" | "active" | "archived" };
+  const body = await request.json() as { slug?: string; name?: string; brand?: string; price?: string; mrp?: string; stock?: string; status?: "draft" | "active" | "archived" };
   if (!body.slug) return NextResponse.json({ message: "Product slug is required." }, { status: 400 });
+  const parseInteger = (value?: string) => value === undefined ? undefined : /^\d+$/.test(value.trim()) ? Number.parseInt(value, 10) : NaN;
+  const price = parseInteger(body.price);
+  const mrp = parseInteger(body.mrp);
+  const stock = parseInteger(body.stock);
+  if ([price, mrp, stock].some((value) => value !== undefined && (!Number.isInteger(value) || value < 1))) return NextResponse.json({ message: "Price, MRP, and stock must be whole numbers greater than 0." }, { status: 400 });
   const products = await productsCollection();
   const filter = user.role === "admin" ? { slug: body.slug } : { slug: body.slug, sellerId: user.id };
-  const update = { ...(body.name ? { name: body.name.trim() } : {}), ...(body.price ? { price: body.price } : {}), ...(body.mrp ? { mrp: body.mrp } : {}), ...(body.stock !== undefined ? { stock: body.stock } : {}), ...(body.status ? { status: body.status } : {}), updatedAt: new Date() };
+  const sentenceCase = (value: string) => { const trimmed = value.trim().toLowerCase(); return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : ""; };
+  const update = { ...(body.name ? { name: sentenceCase(body.name) } : {}), ...(body.brand ? { brand: sentenceCase(body.brand) } : {}), ...(price !== undefined ? { price } : {}), ...(mrp !== undefined ? { mrp } : {}), ...(stock !== undefined ? { stock } : {}), ...(body.status ? { status: body.status } : {}), updatedAt: new Date() };
   const result = await products.updateOne(filter, { $set: update });
   return NextResponse.json({ updated: result.modifiedCount > 0 });
 }
